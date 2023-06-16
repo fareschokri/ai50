@@ -166,8 +166,7 @@ def minimax(board):
 def maxvalue(board):
     v = - math.inf
     if terminal(board):
-        util = utility(board)
-        return util
+        return utility(board)
     for action in actions(board):
         if v != 1:
             v = max(v, minvalue(result(board, action)))
@@ -178,8 +177,7 @@ def maxvalue(board):
 def minvalue(board):
     v = math.inf
     if terminal(board):
-        util = utility(board)
-        return util
+        return utility(board)
     for action in actions(board):
         if v != -1:
             v = min(v, maxvalue(result(board, action)))
