@@ -11,10 +11,11 @@ CKnave = Symbol("C is a Knave")
 
 # Puzzle 0
 # A says "I am both a knight and a knave."
-# Knowledge based on Unicity and simplified implication.
+# Knowledge based on Unicity and "bi-conditionality" between being said true/false and knight/knave.
 knowledge0 = And(
     Or(And(AKnight, Not(AKnave)), And(AKnave, Not(AKnight))),
-    Or(And(AKnight, AKnave), And(AKnave, Not(And(AKnight, AKnave))))
+    Biconditional(Not(And(AKnight, AKnave)), AKnave),
+    Biconditional(And(AKnight, AKnave), AKnight)
 )
 
 # Puzzle 1
