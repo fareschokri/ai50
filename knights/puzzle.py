@@ -15,7 +15,6 @@ CKnave = Symbol("C is a Knave")
 knowledge0 = And(
     Or(And(AKnight, Not(AKnave)), And(AKnave, Not(AKnight))),
     Biconditional(Not(And(AKnight, AKnave)), AKnave),
-    Biconditional(And(AKnight, AKnave), AKnight)
 )
 
 # Puzzle 1
@@ -25,7 +24,6 @@ knowledge1 = And(
     Or(And(AKnight, Not(AKnave)), And(AKnave, Not(AKnight))),
     Or(And(BKnight, Not(BKnave)), And(BKnave, Not(BKnight))),
     Biconditional(Not(And(AKnave, BKnave)), AKnave),
-    Biconditional(And(AKnave, BKnave), AKnight)
 )
 
 # Puzzle 2
@@ -34,9 +32,9 @@ knowledge1 = And(
 knowledge2 = And(
     Or(And(AKnight, Not(AKnave)), And(AKnave, Not(AKnight))),
     Or(And(BKnight, Not(BKnave)), And(BKnave, Not(BKnight))),
-    Biconditional(Or(And(AKnight, BKnight), And(AKnave, BKnave)), AKnight),
+    Biconditional(And(AKnight, BKnight), AKnight),
     Biconditional(Not(Or(And(AKnight, BKnight), And(AKnave, BKnave))), AKnave),
-    Biconditional(Or(And(AKnave, BKnight), And(AKnight, BKnave)), BKnight),
+    Biconditional(And(AKnave, BKnight), BKnight),
     Biconditional(Not(Or(And(AKnave, BKnight), And(AKnight, BKnave))), BKnave)
 )
 
