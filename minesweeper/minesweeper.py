@@ -107,6 +107,7 @@ class Sentence():
         """
         if self.count == len(self.cells):
             return self.cells
+        return set()
 
     def known_safes(self):
         """
@@ -114,6 +115,7 @@ class Sentence():
         """
         if self.count == 0:
             return self.cells
+        return set()
 
     def mark_mine(self, cell):
         """
@@ -187,7 +189,73 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
-        raise NotImplementedError
+        self.moves_made.add(cell)
+        self.mark_safe(cell)
+
+        neighbors = []
+        # Loop over all cells within one row and column
+        for i in range(cell[0] - 1, cell[0] + 2):
+            for j in range(cell[1] - 1, cell[1] + 2):
+
+                # Ignore the cell itself
+                if (i, j) == cell:
+                    continue
+
+                # Update count if cell in bounds and is mine
+                if 0 <= i < self.height and 0 <= j < self.width and (i, j) in self.mines:
+                    count -= 1
+                elif 0 <= i < self.height and 0 <= j < self.width and (i, j) not in self.safes:
+                    neighbors.append((i, j))
+
+        if len(neighbors) > 0:
+            self.knowledge.append(Sentence(neighbors, count))
+
+        for sentence in self.knowledge:
+            if sentence.count == len(sentence.cells):
+                for cell in frozenset(sentence.cells):
+                    self.mark_mine(cell)
+            if sentence.count == 0:
+                for cell in frozenset(sentence.cells):
+                    self.mark_safe(cell)
+        self.knowledge = list(filter(lambda a: a != Sentence(set(), 0), self.knowledge))
+        for sentence in self.knowledge:
+            for other_sentence in self.knowledge:
+                intersection_cells = other_sentence.cells.intersection(sentence.cells)
+                if sentence != other_sentence and (
+                        len(intersection_cells) == len(sentence.cells) or len(intersection_cells) == len(
+                        other_sentence.cells)):
+                    sentence_other_sentence_difference = sentence.cells.difference(other_sentence.cells)
+                    act_sentence_other_sentence_difference = Sentence(sentence_other_sentence_difference,
+                                                                      sentence.count - other_sentence.count)
+                    other_sentence_sentence_difference = other_sentence.cells.difference(sentence.cells)
+                    act_other_sentence_sentence_difference = Sentence(other_sentence_sentence_difference,
+                                                                      other_sentence.count - sentence.count)
+
+                    if other_sentence.cells.issubset(sentence.cells) and len(
+                            sentence_other_sentence_difference) > 0 and \
+                            act_sentence_other_sentence_difference not in self.knowledge:
+                        self.knowledge.append(act_sentence_other_sentence_difference)
+                        if act_sentence_other_sentence_difference.count == len(
+                                act_sentence_other_sentence_difference.cells):
+                            for cell in frozenset(act_sentence_other_sentence_difference.cells):
+                                self.mark_mine(cell)
+                        if act_sentence_other_sentence_difference.count == 0:
+                            for cell in frozenset(act_sentence_other_sentence_difference.cells):
+                                self.mark_safe(cell)
+                        self.knowledge = list(filter(lambda a: a != Sentence(set(), 0), self.knowledge))
+
+                    elif sentence.cells.issubset(other_sentence.cells) and len(
+                            other_sentence_sentence_difference) > 0 and \
+                            act_other_sentence_sentence_difference not in self.knowledge:
+                        self.knowledge.append(act_other_sentence_sentence_difference)
+                        if act_other_sentence_sentence_difference.count == len(
+                                act_other_sentence_sentence_difference.cells):
+                            for cell in frozenset(act_other_sentence_sentence_difference.cells):
+                                self.mark_mine(cell)
+                        if act_other_sentence_sentence_difference.count == 0:
+                            for cell in frozenset(act_other_sentence_sentence_difference.cells):
+                                self.mark_safe(cell)
+                        self.knowledge = list(filter(lambda a: a != Sentence(set(), 0), self.knowledge))
 
     def make_safe_move(self):
         """
@@ -198,7 +266,15 @@ class MinesweeperAI():
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
-        raise NotImplementedError
+        possible_moves = []
+        for i in range(self.height):
+            for j in range(self.width):
+                if (i, j) not in self.moves_made and (i, j) not in self.mines and (i, j) in self.safes:
+                    possible_moves.append((i, j))
+        if len(possible_moves) == 0:
+            return None
+        i = random.randrange(len(possible_moves))
+        return possible_moves[i]
 
     def make_random_move(self):
         """
@@ -207,4 +283,12 @@ class MinesweeperAI():
             1) have not already been chosen, and
             2) are not known to be mines
         """
-        raise NotImplementedError
+        possible_moves = []
+        for i in range(self.height):
+            for j in range(self.width):
+                if (i, j) not in self.moves_made and (i, j) not in self.mines:
+                    possible_moves.append((i, j))
+        if len(possible_moves) == 0:
+            return None
+        i = random.randrange(len(possible_moves))
+        return possible_moves[i]
