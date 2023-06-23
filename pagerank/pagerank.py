@@ -70,7 +70,6 @@ def transition_model(corpus, page, damping_factor):
     return pr_dict
 
 
-
 def sample_pagerank(corpus, damping_factor, n):
     """
     Return PageRank values for each page by sampling `n` pages
@@ -80,7 +79,22 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    probabilities = dict()
+    for page in corpus:
+        probabilities[page] = 0
+
+    list_pages = list(corpus)
+    i = 0
+    while i < n:
+        rand = random.randrange(len(list_pages))
+        start_page = list_pages[rand]
+        new_probabilities = transition_model(corpus, start_page, damping_factor)
+        for page in new_probabilities:
+            probabilities[page] += new_probabilities[page]
+        i += 1
+    for page in probabilities:
+        probabilities[page] = probabilities[page]/n
+    return probabilities
 
 
 def iterate_pagerank(corpus, damping_factor):
