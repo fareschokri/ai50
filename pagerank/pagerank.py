@@ -82,13 +82,13 @@ def sample_pagerank(corpus, damping_factor, n):
     probabilities = dict()
     for page in corpus:
         probabilities[page] = 0
-
-    list_pages = list(corpus)
     i = 0
     while i < n:
-        rand = random.randrange(len(list_pages))
-        start_page = list_pages[rand]
-        new_probabilities = transition_model(corpus, start_page, damping_factor)
+        if i == 0:
+            sample_page = random.choice(list(probabilities.keys()))
+        else:
+            sample_page = random.choices(list(probabilities.keys()), cum_weights=list(probabilities.values()))[0]
+        new_probabilities = transition_model(corpus, sample_page, damping_factor)
         for page in new_probabilities:
             probabilities[page] += new_probabilities[page]
         i += 1
