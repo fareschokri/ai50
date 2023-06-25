@@ -59,14 +59,20 @@ def transition_model(corpus, page, damping_factor):
     """
     num_pages = len(corpus)
     num_links = len(corpus[page])
-
+    if num_links == 0:
+        corpus[page] = set(corpus.keys())
+        num_links = num_pages
+    list_pages = list(corpus)
     pr_dict = dict()
 
     for pg in corpus:
-        prob = (1 - damping_factor) / num_pages
-        if pg in corpus[page]:
-            prob += damping_factor / num_links
-        pr_dict[pg] = prob
+        if list_pages.index(pg) == len(corpus):
+            pr_dict[pg] = 1 - sum(list(corpus.values()))
+        else:
+            prob = (1 - damping_factor) / num_pages
+            if pg in corpus[page]:
+                prob += (damping_factor / num_links)
+            pr_dict[pg] = prob
     return pr_dict
 
 
@@ -87,13 +93,13 @@ def sample_pagerank(corpus, damping_factor, n):
         if i == 0:
             sample_page = random.choice(list(probabilities.keys()))
         else:
-            sample_page = random.choices(list(probabilities.keys()), cum_weights=list(probabilities.values()))[0]
+            sample_page = random.choices(list(probabilities.keys()), weights=list(probabilities.values()), k=1)[0]
         new_probabilities = transition_model(corpus, sample_page, damping_factor)
         for page in new_probabilities:
             probabilities[page] += new_probabilities[page]
         i += 1
     for page in probabilities:
-        probabilities[page] = probabilities[page]/n
+        probabilities[page] = probabilities[page] / n
     return probabilities
 
 
@@ -106,7 +112,31 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    pages_num = len(corpus)
+    initial_prob = 1 / pages_num
+    probabilities = dict()
+    for page in corpus:
+        probabilities[page] = initial_prob
+    candidates_list = list(corpus)
+    while len(candidates_list) > 0:
+        for page in candidates_list:
+            linked_page_pr_nl = dict()
+            empty_links = False
+            if len(corpus[page]) == 0:
+                empty_links = True
+            for extra in corpus:
+                if empty_links and extra == page:
+                    corpus[extra] = set(corpus.keys())
+                if page in corpus[extra]:
+                    linked_page_pr_nl[extra] = probabilities[extra] / len(corpus[extra])
+
+            new_pr = ((1 - damping_factor) / pages_num) + damping_factor * (
+                sum(list(linked_page_pr_nl.values())))
+            if abs(new_pr - probabilities[page]) < 0.001:
+                candidates_list.remove(page)
+            else:
+                probabilities[page] = new_pr
+    return probabilities
 
 
 if __name__ == "__main__":
