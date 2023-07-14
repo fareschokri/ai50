@@ -63,7 +63,8 @@ def load_data(filename):
         reader = csv.reader(f)
         next(reader)
         months = ["Jan", "Feb", "Mar", "Apr", "May", "June", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-        data = []
+        evidence = []
+        label = []
         for row in reader:
             length = len(row)
             initial_evidence = [cell for cell in row[:length - 1]]
@@ -77,11 +78,13 @@ def load_data(filename):
             initial_evidence[10] = months.index(initial_evidence[10])
             initial_evidence[length - 3] = 1 if initial_evidence[length - 3] == "Returning_Visitor" else 0
             initial_evidence[length - 2] = 0 if initial_evidence[length - 2] == "FALSE" else 1
-            data.append({
-                "evidence": [float(cell) if isinstance(cell, float) else int(cell) for cell in initial_evidence],
-                "label": 0 if row[length - 1] == "FALSE" else 1
-            })
-        return data
+            evidence.append(
+                [float(cell) if isinstance(cell, float) else int(cell) for cell in initial_evidence]
+                )
+            label.append(
+                0 if row[length - 1] == "FALSE" else 1
+            )
+        return evidence, label
 
 
 def train_model(evidence, labels):
@@ -89,7 +92,9 @@ def train_model(evidence, labels):
     Given a list of evidence lists and a list of labels, return a
     fitted k-nearest neighbor model (k=1) trained on the data.
     """
-    raise NotImplementedError
+    model = KNeighborsClassifier(n_neighbors=1)
+    model.fit(evidence, labels)
+    return model
 
 
 def evaluate(labels, predictions):
@@ -107,7 +112,14 @@ def evaluate(labels, predictions):
     representing the "true negative rate": the proportion of
     actual negative labels that were accurately identified.
     """
-    raise NotImplementedError
+    got_true = 0
+    got_false = 0
+    for actual, predicted in zip(labels, predictions):
+        if actual == predicted == 1:
+            got_true += 1
+        if actual == predicted == 0:
+            got_false += 1
+    return got_true / labels.count(1), got_false / labels.count(0)
 
 
 if __name__ == "__main__":
