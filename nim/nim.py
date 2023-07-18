@@ -133,7 +133,7 @@ class NimAI():
         """
         best = 0
         for action in Nim.available_actions(state):
-            if (tuple(state), action) in self.q and self.q[tuple(state), action] > best:
+            if (tuple(state), action) in self.q and self.q[tuple(state), action] >= best:
                 best = self.q[tuple(state), action]
         return best
 
@@ -161,17 +161,15 @@ class NimAI():
         if epsilon is False:
             if len(all_best_actions) > 0:
                 return all_best_actions[0]
-            return available[0]
+            return random.choice(available)
         da_list = []
+        probabilities = []
         if len(all_best_actions) > 0:
             da_list = [all_best_actions[0]]
-        if len(da_list) > 0:
             probabilities = [1 - self.epsilon]
-            for action_from_pile in available:
-                da_list.append(action_from_pile)
-                probabilities.append(self.epsilon / len(available))
-            return random.choices(da_list, weights=probabilities, k=1)[0]
-        return available[0]
+        da_list.append(random.choice(available))
+        probabilities.append(self.epsilon)
+        return random.choices(da_list, weights=probabilities, k=1)[0]
 
 
 def train(n):
