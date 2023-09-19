@@ -62,17 +62,13 @@ def transition_model(corpus, page, damping_factor):
     if num_links == 0:
         corpus[page] = set(corpus.keys())
         num_links = num_pages
-    list_pages = list(corpus)
     pr_dict = dict()
 
     for pg in corpus:
-        if list_pages.index(pg) == len(corpus):
-            pr_dict[pg] = 1 - sum(list(corpus.values()))
-        else:
-            prob = (1 - damping_factor) / num_pages
-            if pg in corpus[page]:
-                prob += (damping_factor / num_links)
-            pr_dict[pg] = prob
+        prob = (1 - damping_factor) / num_pages
+        if pg in corpus[page]:
+            prob += (damping_factor / num_links)
+        pr_dict[pg] = prob
     return pr_dict
 
 
@@ -100,6 +96,9 @@ def sample_pagerank(corpus, damping_factor, n):
         i += 1
     for page in probabilities:
         probabilities[page] = probabilities[page] / n
+    total = sum(list(probabilities.values()))
+    for page in probabilities:
+        probabilities[page] = probabilities[page] / total
     return probabilities
 
 
@@ -121,21 +120,22 @@ def iterate_pagerank(corpus, damping_factor):
     while len(candidates_list) > 0:
         for page in candidates_list:
             linked_page_pr_nl = dict()
-            empty_links = False
             if len(corpus[page]) == 0:
-                empty_links = True
+                corpus[page] = set(corpus.keys())
             for extra in corpus:
-                if empty_links and extra == page:
-                    corpus[extra] = set(corpus.keys())
                 if page in corpus[extra]:
                     linked_page_pr_nl[extra] = probabilities[extra] / len(corpus[extra])
 
-            new_pr = ((1 - damping_factor) / pages_num) + damping_factor * (
-                sum(list(linked_page_pr_nl.values())))
+            new_pr = ((1 - damping_factor) / pages_num) + damping_factor * sum(list(linked_page_pr_nl.values()))
+
             if abs(new_pr - probabilities[page]) < 0.001:
                 candidates_list.remove(page)
-            else:
-                probabilities[page] = new_pr
+
+            probabilities[page] = new_pr
+    total = sum(list(probabilities.values()))
+    for page in probabilities:
+        probabilities[page] = probabilities[page] / total
+
     return probabilities
 
 
