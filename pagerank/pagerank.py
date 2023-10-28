@@ -120,14 +120,14 @@ def iterate_pagerank(corpus, damping_factor):
     candidates_list = list(corpus)
     while len(candidates_list) > 0:
         for page in candidates_list:
-            linked_page_pr_nl = dict()
-            if len(corpus[page]) == 0:
-                corpus[page] = set(corpus.keys())
+            prob_total = 0
             for extra in corpus:
+                if not corpus[extra]:
+                    prob_total += probabilities[extra] / len(corpus)
                 if page in corpus[extra]:
-                    linked_page_pr_nl[extra] = probabilities[extra] / len(corpus[extra])
+                    prob_total += probabilities[extra] / len(corpus[extra])
 
-            new_pr = ((1 - damping_factor) / pages_num) + damping_factor * sum(list(linked_page_pr_nl.values()))
+            new_pr = ((1 - damping_factor) / pages_num) + damping_factor * prob_total
 
             if abs(new_pr - probabilities[page]) < 0.001:
                 candidates_list.remove(page)
