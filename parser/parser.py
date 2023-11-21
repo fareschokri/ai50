@@ -17,7 +17,7 @@ V -> "smiled" | "tell" | "were"
 NONTERMINALS = """
 S -> NP VP | S Conj VP | S Conj S
 AP -> Adj | Adj AP
-NP -> N | Det NP | AP NP | NP PP | PP Adv
+NP -> N | Det N | Det AP N | AP NP | NP PP | PP Adv
 PP -> P NP
 VP -> V | V NP | Adv VP | VP PP | VP Adv
 """
@@ -27,7 +27,6 @@ parser = nltk.ChartParser(grammar)
 
 
 def main():
-
     # If filename specified, read sentence from file
     if len(sys.argv) == 2:
         with open(sys.argv[1]) as f:
@@ -79,7 +78,17 @@ def np_chunk(tree):
     whose label is "NP" that does not itself contain any other
     noun phrases as subtrees.
     """
-    return []
+    chunks = []
+    for s in tree.subtrees():
+        if s.label() == "NP":
+            contains_chunk = False
+            for st in s.subtrees():
+                if st.label() == "NP" and s != st:
+                    contains_chunk = True
+                    break
+            if contains_chunk is False:
+                chunks.append(s)
+    return chunks
 
 
 if __name__ == "__main__":
